@@ -30,6 +30,7 @@ final class studentTable extends PowerGridComponent
     public $globalsIds;
     public $shareAnnee;
     public $shareNiveau;
+    public $checkedFiche;
     public int $perPage = 5;
     public array $perPageValues = [1, 5, 10, 20, 50];
     
@@ -46,16 +47,17 @@ final class studentTable extends PowerGridComponent
         $this->showCheckBox();
         
         return [
-            
+           /* 
             Exportable::make('Exportation DOB')
             ->striped()
             ->type(Exportable::TYPE_XLS, Exportable::TYPE_CSV)
+            
             ->columnWidth([
                 2 => 30,
                 4 => 20,
-            ]),
+            ]), */
             Header::make()
-                    ->showToggleColumns()
+                    //->showToggleColumns()
                     ->showSearchInput()
                     ,
                     
@@ -72,8 +74,9 @@ final class studentTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
+
         
-        return eleve::query()
+         $query=eleve::query()
         ->leftJoin('ecoles', function($ecole){
             $ecole->on('eleves.ecole_A','=','ecoles.id');  
         })
@@ -81,12 +84,20 @@ final class studentTable extends PowerGridComponent
         ->leftJoin('fiches', function($fiche){
             $fiche->on('eleves.fiche_id','=','fiches.id');
         })
-        //->where('eleves.annee',"LIKE", "%".$this->shareAnnee."%")
-        //->where('eleves.classe',"LIKE", "%".$this->shareNiveau."%")
-        ->select('eleves.*','eleves.id as id_eleves', 'eleves.classe as eleve_classe','eleves.matricule as eleve_matricule','eleves.nom as eleve_nom', 'eleves.prenom as eleve_prenom',
-         'ecoles.NOMCOMPLs as ecole_nom', 'fiches.nom as fiche_nom','fiches.fiche_nom',
-            'eleves.annee as eleve_annee'); 
- 
+        ->select('eleves.*','eleves.id as id_eleves', 'eleves.classe as eleve_classe',
+                 'eleves.matricule as eleve_matricule','eleves.nom as eleve_nom', 'eleves.prenom as eleve_prenom',
+                 'ecoles.NOMCOMPLs as ecole_nom', 'fiches.nom as fiche_nom','fiches.fiche_nom',
+                 'eleves.annee as eleve_annee'
+        )
+        ->where('eleves.annee',"LIKE", "%".$this->shareAnnee."%")
+        ->where('eleves.classe',"LIKE", "%".$this->shareNiveau."%") ;
+        
+        if($this->checkedFiche=="true"){ // afficher les eleve avec fiche ou sans fiche
+            return $query->whereNotNull('fiche_id');
+        }else{
+            return $query;
+        }
+        
     }
 
     public function relationSearch(): array
@@ -98,6 +109,7 @@ final class studentTable extends PowerGridComponent
 
     public function addColumns(): PowerGridColumns
     {
+        
         return PowerGrid::columns()
             //->addColumn('id')
             ->addColumn('matricule')
@@ -131,7 +143,13 @@ final class studentTable extends PowerGridComponent
             })
             //->addColumn('ecole_id')
             ->addColumn('eleve_classe')
-            ->addColumn('serie')
+            ->addColumn('serie', function(eleve $eleve){
+                if($eleve->serie == "NA" or $eleve->serie == ""){
+                    return '';
+                }else{
+                    return $eleve->serie;
+                }
+            })
             ->addColumn('eleve_annee', function(eleve $eleve){
                 if($eleve->annee=='0001'){
                     return 'pas année';
@@ -139,6 +157,7 @@ final class studentTable extends PowerGridComponent
                 return $eleve->annee;
             })
             ->addColumn('fiche',function(eleve $fiche){
+                
                 if($fiche->fiche_nom){
                     return(<<<HTML
                 <div style="text-align:center">

@@ -26,7 +26,7 @@
 
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                     <x-nav-link href="{{ route('dren') }}" :active="request()->routeIs('dren')">
-                        {{ __('Dren') }}
+                        {{ __('DREN') }}
                     </x-nav-link>
                 </div>
 
@@ -185,7 +185,7 @@
 
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link href="{{ route('dren') }}" :active="request()->routeIs('dren')">
-                <span  >{{ __('Drens') }}</span>
+                <span  >{{ __('DREN') }}</span>
                 
             </x-responsive-nav-link>
         </div>
@@ -199,7 +199,7 @@
 
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link href="{{ route('fiche') }}" :active="request()->routeIs('fiche')">
-                <span  >{{ __('Fiches orientation') }}</span>
+                <span  >{{ __('Décisions') }}</span>
                 
             </x-responsive-nav-link>
         </div>

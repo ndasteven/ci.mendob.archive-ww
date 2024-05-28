@@ -1,6 +1,6 @@
 
-<div class="modal fade" id="modalFicheInfos" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" wire:ignore.self>
-    <div class="modal-dialog modal-fullscreen">
+<div  class="modal fade" id="modalFicheInfos" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" wire:ignore.self>
+  <div class="modal-dialog modal-fullscreen">
         <div class="modal-content" style="background-color: #f4f7f7">
           <div class="modal-header shadow-2xl" style="background-color: #fff">
             <h1 class="modal-title titre fs-5" id="exampleModalLabel">INFORMATIONS SUR LA FICHE</h1>
@@ -40,6 +40,10 @@
                                             <td style=""><span style="color: ; font-weight:bold">{{$ficheInfo['fiche_ecole']->NOMCOMPLs}}</span></td>
                                         </tr>
                                         <tr>
+                                          <td style="text-align: left"><span style="color: black; font-weight:bold">Nombre d'élèves sur la fiche </span>: </td>
+                                          <td style=""><span style="color: ; font-weight:bold">{{count($elevefiche_eleveFichePivot)}}</span></td>
+                                        </tr>
+                                        <tr>
                                             <td style="text-align: left"><span style="color: black; font-weight:bold">Voir la fiche</span>: </td>
                                             <td style=""><span style="color: ; font-weight:bold"><a href="{{ route('pdf.show', ['fileName' => $ficheInfo->fiche_nom]) }}" target="_blank">
                                                 <button class="btn btn-sm btn-outline-primary test_click">Voir Fiche <i class="bi bi-file-earmark-pdf-fill" style="color:red;"></i></button>
@@ -63,7 +67,12 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+                                <div class="mt-2" style="text-align: center;">
+                                  @if (Auth::check() && Auth::user()->role === 'superAdmin' )
+                                    <button class="btn btn-danger btn-sm col-7 mx-auto" wire:click="openSecondModal" ><i class="bi bi-trash3"></i> supprimer la décision</button> 
+                                  @endif
+                                  
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -176,6 +185,7 @@
                                                                         <select wire:model='serie' class="form-select form-select-sm" aria-label="Small select example">
                                                                             <option selected value="">choisir la série</option>
                                                                             <option value="A">A</option>
+                                                                            <option value="B">B</option>
                                                                             <option value="C">C</option>
                                                                             <option value="G1">G1</option>
                                                                             <option value="G2">G2</option>
@@ -184,6 +194,7 @@
                                                                             <option value="AB">AB</option>
                                                                             <option value="T1">T1</option>
                                                                             <option value="T2">T2</option>
+                                                                            <option value="T3">T3</option>
                                                                           </select>
                                                                     </div>
                                                                     <div class="mt-2">
@@ -284,7 +295,7 @@
                                     <div class="row">
                                         <div class="col-md-10 mx-auto">
                                             <div class="row">
-                                                <div class="col" ><b>Nombre d'élèves sur la fiche'</b></div>
+                                                <div class="col" ><b>Nombre d'élèves sur la fiche</b></div>
                                                 <div class="col" style="text-align: right">{{count($elevefiche_eleveFichePivot)}}</div>
                                             </div>
                                           <hr class="border border-success border-1 opacity-50">
@@ -293,6 +304,7 @@
                                 </div>
                             </div>
                         </div>
+                        
                         <div class="row mt-2">
                             <div class="card shadow-xl col-md-11 mx-auto">
                                 <div class="card-body">
@@ -302,10 +314,12 @@
                                             <div class="col" ><b>Liste des élèves sur la fiche</b></div>
                                             <div class="col" style="text-align: right">
                                                 <label for="exampleFormControlInput1" class="form-label">Rechercher un matricule</label>
-                                                <input type="text" wire:model="search" wire:keydown.debounce.900ms="research" class="form-control-sm col-md-5 col-12" id="exampleFormControlInput1" placeholder="12345678A">
+                                                <input type="text"  wire:model="search" wire:keydown.debounce.900ms="research" class="form-control-sm col-md-5 col-12" id="exampleFormControlInput1" placeholder="12345678A">
                                             </div>
+                                            @if (Auth::check() && Auth::user()->role === 'superAdmin' || Auth::user()->role === 'admin')
                                             <button wire:click="addStudentOnDecision" data-bs-toggle="offcanvas" data-bs-target="#offcanvasTop" aria-controls="offcanvasTop"><i class="bi bi-person-plus-fill"></i></button>
-                                        </div>
+                                            @endif
+                                          </div>
                                         <div class="float-right">
                                             <div wire:loading>
                                                 <div class="spinner-border text-primary" role="status">
@@ -324,6 +338,11 @@
                                                         <th scope="col">Nom</th>
                                                         <th scope="col">Prenom</th>
                                                         <th scope="col">Genre</th>
+                                                        @if ($ficheInfo)
+                                                            @if($ficheInfo['classe']=='2nde')
+                                                            <th scope="col">Serie</th>
+                                                            @endif
+                                                        @endif
                                                         <th scope="col">Date de naissance</th>
                                                       </tr>
                                                     </thead>
@@ -337,15 +356,22 @@
                                                             <td>{{$item->nom}}</td>
                                                             <td>{{$item->prenom}}</td>
                                                             <td>{{$item->genre}}</td>
+                                                            
+                                                            @if ($ficheInfo)
+                                                              @if($ficheInfo['classe']=='2nde')
+                                                              <td>{{$item->serie}}</td>
+                                                              @endif
+                                                            @endif
+
                                                             <td>
-                                                                @if ($item->dateNaissance=='0000-01-01')
-                                                                    Pas de date de naissance
+                                                                @if ($item->dateNaissance=='0000-01-01' )
+                                                                    Pas de date
                                                                 @else
                                                                     @php
                                                                     $date= date('d-m-Y', strtotime($item->dateNaissance));
                                                                     $anneeNaissance = explode('-', $date)[2];
-                                                                    if ($anneeNaissance >= date('Y') or $anneeNaissance =='2023') {
-                                                                        echo 'Pas de date ';
+                                                                    if ($anneeNaissance >= date('Y') or $anneeNaissance =='2023' or $anneeNaissance =='1970') {
+                                                                        echo 'Pas de date';
                                                                     } else{
                                                                         echo $date;
                                                                     }
@@ -366,6 +392,7 @@
                                                             <td></td>
                                                             
                                                         </tr>
+                                                        @if (Auth::check() && Auth::user()->role === 'superAdmin' || Auth::user()->role === 'admin')
                                                         <tr>
                                                             <td></td>
                                                             <td></td>
@@ -374,10 +401,12 @@
                                                             <td></td>
                                                         </tr>
                                                         @endif
+                                                        @endif
                                                         
                                                     </tbody>
                                                 </table>
-                                                {{ $liste_students_fiches->onEachSide(1)->appends(['page' => request()->page])->links() }}
+                                                
+                                                {{ $liste_students_fiches}}
                                             </div>
                                                                                         
                                           </div>
@@ -396,45 +425,65 @@
         </div>
          <!--modal de confirmation de suppression-->
           
-         <div id="myModals" class="modalDel" style="text-align: center">
-            <div class="modal-contents">
-              <span id="closeModal" class="closes">&times;</span>
-              <div style="" class="p-3">
-                <h2 style="color: #1a1818; font-weight: bold"  > Suppression de l'élève</h2>
-              </div>
-              
-              <div class="col-md-8  col-12 mx-auto">
-                <div class="card shadow-xl mt-3 mb-4">
-                  <div class="card-body">
-                   <p style="font-weight: bold; color:red; text-align:center">Voulez vous supprimer l'élève ?</p> 
-                   <div class="mt-2" style="text-align: center">
-                    <i class="bi bi-exclamation-circle" style="font-size: 70px; color: red" ></i>
-                   </div>
-                   <div class="col-12 mx-auto d-flex justify-content-between mt-4 mb-2">
-                    <button class="btn btn-sm btn-danger col-5 deletes">confirmer la suppression</button>
-                    <button class="btn btn-sm btn-info col-5 clo">Annuler</button>
-                   </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-          </div>
-        <!--fin modal de confirmation de suppression-->
+         
     </div>
     <button style="display: none" class="update" href="" wire:click="mise_a_jour"></button> <!--bouton fictif pour rafraichir la page sans actualise la page en ca de modification des fiche ou detache-->
      <!--composant de loading permettant de patientez pendant chargement des datas provenant du controller livewire-->
      
         @include('livewire.loading')
-     
-     
      <!--fin loading -->   
-     <script>
-        document.addEventListener('livewire:initialized', () => {
-            @this.on('mise_a_jour', function(){
-            $('.update').click()
-          })
-    })
-    </script>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="secondModal" tabindex="-1" role="dialog" aria-labelledby="secondModalLabel" aria-hidden="true" style="background-color: rgba(0, 0, 0, 0.4);width:100%; height:100%; left:0; top:0;position:fixed;" wire:ignore.self>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="position: relative">
+      <div class="modal-header">
+        <h5 class="modal-title" id="secondModalLabel">Suppression de la fiche</h5>
+      </div>
+      @if ($elevefiche_eleveFichePivot)
+      <div class="modal-body">
+        @if (count($elevefiche_eleveFichePivot)>0)
+          La décision contient : <span style="color:red">{{count($elevefiche_eleveFichePivot)}}</span>  @if (count($elevefiche_eleveFichePivot)>1) élèves @else élève @endif  donc ne peut être supprimée
+          @else
+          Voulez-vous vraiment supprimer la décision?
+        @endif
+      </div>
+      <div class="modal-footer">
+        @if (count($elevefiche_eleveFichePivot)<=0)
+        <button class="btn btn-danger btn-sm deleteFiche" wire:click="deleteFiche">supprimer</button>
+        @endif
+      </div>
+       @endif
+       <button type="button" class="btn  closeSecondModal btn-sm col-1" data-dismiss="modalclose" style="position: absolute; right:10px; bottopm:10px; margin-top:15px"><i class="bi bi-x-circle"></i></button>
+    </div>
+  </div>
+</div>
+<!--fin modal de confirmation de suppression-->
+@script
+<script>
+  document.addEventListener('livewire:initialized', () => {
+      @this.on('mise_a_jour', function(){
+      $('.update').click()
+    })
+
+    Livewire.on('openSecondModal', ()=>{
+      $('#secondModal').modal('show');
+    })
+    $('.closeSecondModal').click(function(){
+      $('#secondModal').modal('hide')
+    })
+
+    Livewire.on('deleteok', ()=>{
+      $('#modalFicheInfos').modal('hide')
+      $('#secondModal').modal('hide')
+      Swal.fire(
+      'supprimer',
+      'La décision a été supprimé avec success',
+      'success'
+      )
+     
+    })
+})
+</script>
+@endscript

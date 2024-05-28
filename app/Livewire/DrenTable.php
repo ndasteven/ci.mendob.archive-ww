@@ -22,9 +22,11 @@ final class drenTable extends PowerGridComponent
     use WithExport;
     public int $perPage = 5;
     public array $perPageValues = [1, 5, 10, 20, 50];
+    #[\Livewire\Attributes\On('update')] //lors d'une mise a jour il ecoute le dispatch update qui lui a ete transferer par le comtrolleur drenindex.php et met a jout datatable powergrid
+    #[\Livewire\Attributes\On('create')] //lors d'une mise a jour il ecoute le dispatch create qui lui a ete transferer par le comtrolleur drenindex.php et met a jout datatable powergrid
     public function setUp(): array
     {
-        //$this->showCheckBox();
+        $this->showCheckBox();
 
         return [
             /*Exportable::make('export')
@@ -40,7 +42,7 @@ final class drenTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return dren::query();
+        return dren::query()->orderBy('nom_dren', 'asc');
     }
 
     public function relationSearch(): array
@@ -65,7 +67,7 @@ final class drenTable extends PowerGridComponent
     public function columns(): array
     {
         return [
-            Column::make('Id', 'id'),
+            //Column::make('Id', 'id'),
             Column::make('Nom dren', 'nom_dren')
                 ->sortable()
                 ->searchable(),
@@ -82,28 +84,32 @@ final class drenTable extends PowerGridComponent
     public function filters(): array
     {
         return [
-            Filter::inputText('nom_dren')->operators(['contains']),
-            Filter::inputText('code_dren')->operators(['contains']),
-            Filter::datetimepicker('created_at'),
+            
         ];
     }
 
     #[\Livewire\Attributes\On('edit')]
+    /*
     public function edit($rowId): void
     {
         $this->js('alert('.$rowId.')');
     }
-
+    */
+    //permet de afficher le voir boutton voir+ dans le drentable
     public function actions(\App\Models\dren $row): array
     {
         return [
             Button::add('edit')
-                ->slot('Edit: '.$row->id)
+                ->slot('voir +')
                 ->id()
-                ->class('pg-btn-white dark:ring-pg-primary-600 dark:border-pg-primary-600 dark:hover:bg-pg-primary-700 dark:ring-offset-pg-primary-800 dark:text-pg-primary-300 dark:bg-pg-primary-700')
-                ->dispatch('edit', ['rowId' => $row->id])
+                ->class('btn btn-sm  checkinfo')
+                ->dispatch('edit', ['rowId' => $row->id]),
         ];
     }
+
+    
+
+    
 
     /*
     public function actionRules($row): array

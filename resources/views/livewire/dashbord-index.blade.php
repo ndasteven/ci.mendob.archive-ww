@@ -1,13 +1,21 @@
 <div>
       <div>
-        <div class="col-md-2 col-11">
-          <select wire:change="changeYear" wire:model="yearsearch" class="form-select mt-4 ml-4" aria-label="Default select example">
+        <div class="col-md-2 col-11" style="position: relative">
+          <select wire:change="changeYear" wire:model="yearsearch" class="form-select mt-4 ml-4" aria-label="Default select example" >
             <option selected value="">Toutes les années </option>
             <option value="2019">2019</option>
             <option value="2020">2020</option>
             <option value="2021">2021</option>
             <option value="2022">2022</option>
+            <option value="2023">2023</option>
+            <option value="2024">2024</option>
           </select>
+          <div class="col-1" style="position: absolute;top:23%; right:5px">
+            <span class="col-1" wire:loading style="margin: 0;">
+              <div class="spinner-border" role="status" style="width: 15px; height: 15px; color:#ee8712">
+              </div>
+            </span>  
+          </div>
         </div>
       </div>
       

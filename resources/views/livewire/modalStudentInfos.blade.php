@@ -55,8 +55,7 @@
                             <div class="mt-2" style="text-align: center;">
                               @if (Auth::check() && Auth::user()->role === 'superAdmin' )
                                 <button class="btn btn-danger btn-sm col-7 mx-auto" id="openModal"><i class="bi bi-trash3"></i> supprimer l'élève</button> 
-                              @endif
-                              
+                              @endif 
                             </div>
 
                             <div class="card mt-2">

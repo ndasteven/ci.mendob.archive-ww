@@ -27,7 +27,7 @@ class EtablissementIndex extends Component
     public $serieF2=0;
     public $affectation=0;
     public $change_ordre=0;
-    public $change_serie=0;
+    public $reorientatio_reaffectation=0;
     public $omission=0;
     public $orientation=0;
     public $permutation=0;
@@ -96,10 +96,10 @@ class EtablissementIndex extends Component
                     $this->affectation++;
                 }
                 if($item['type_fiche']=="changement_ordre"){
-                    $this->change_ordre;
+                    $this->change_ordre++;
                 }
-                if($item['type_fiche']=="changement_serie"){
-                    $this->change_serie++;
+                if($item['type_fiche']=="reorientatio-reaffectation"){
+                    $this->reorientatio_reaffectation++;
                 }
                 if($item['type_fiche']=="omission"){
                     $this->omission++;
@@ -122,7 +122,7 @@ class EtablissementIndex extends Component
     public function closeSchool(){
         $this->ecoleInfo="";
         $this->nbre2nde =$this->nbre6eme=$this->serieA=$this->serieC=$this->serieG1=$this->serieG2=$this->serieF1=$this->serieF2=0;
-        $this->affectation=$this->change_ordre=$this->change_serie=$this->omission=$this->orientation=$this->permutation=$this->reaffectation=$this->reorientation=0;
+        $this->affectation=$this->change_ordre=$this->reorientatio_reaffectation=$this->omission=$this->orientation=$this->permutation=$this->reaffectation=$this->reorientation=0;
     }
     public string $orderField= 'NOMCOMPLs';
     public string $orderDirection = 'ASC';
@@ -130,23 +130,29 @@ class EtablissementIndex extends Component
 
 
     public function storeEtablissement(){
-
+        
         $validate = $this->validate([
             'CODSERVs'=>'required|min:6',
             'NOMCOMPLs'=>'required|min:3', 
             'GENREs'=>'required|min:1',
-            'CODE_DREN'=>'required:min:1|integer',    
+            'CODE_DREN'=>'required:min:1',    
         ]);
- 
-        if(!ecole::where('CODSERVs', $this->CODSERVs)->exists() || !ecole::where('NOMCOMPLs', $this->CODSERVs)->exists() ){
-            ecole::create($validate);
-            session()->flash("success", "Enregistrement effectué avec succès");
-            $this->resetInput();
+        
+        
+        if(ecole::where('CODSERVs', $this->CODSERVs)->exists() ){
+           
+            session()->flash('error', 'le code Etablissement existe déjà');
             
+        }elseif (ecole::where('NOMCOMPLs', $this->NOMCOMPLs  )->exists()) {
+            
+            session()->flash('error', 'le nom Etablissement existe déjà');
         }
         else
         {
-            session()->flash('error', 'le code Etablissement existe déjà');
+            ecole::create($validate);
+            session()->flash("success", "Enregistrement effectué avec succès");
+            $this->resetInput();
+            $this->dispatch('save');
         }
 
     }
@@ -160,6 +166,7 @@ class EtablissementIndex extends Component
         $this->GENREs =  $ficheEdit[0]->GENREs;
         $this->CODE_DREN =  $ficheEdit[0]->CODE_DREN;
         $this->dispatch('check');
+        $this->dispatch('update');
     }
     public function updateEtablissement(){
 
@@ -167,7 +174,7 @@ class EtablissementIndex extends Component
             'CODSERVs'=>'required|min:6',
             'NOMCOMPLs'=>'required|min:3', 
             'GENREs'=>'required|min:1',
-            'CODE_DREN'=>'required:min:1',    
+            'CODE_DREN'=>'required|min:1'    
         ]);
         $schoolInfo = ecole::find($this->ide);
         if($schoolInfo->update($validate)){

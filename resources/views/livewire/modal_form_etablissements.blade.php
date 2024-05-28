@@ -53,19 +53,21 @@
                     </div>
                   </div>
             </div>
-            <div wire:ignore class="col mb-3">
-              <label for="formFile" class="form-label">Selectionner une DREN</label>
-              <select class="form-select  @error('CODE_DREN') is-invalid @enderror" id="select-beast" wire:model='CODE_DREN' autocomplete="off" >
+            <div  class="col mb-3 mt-2">
+              <label for="select-beast" class="form-label" @error('CODE_DREN') style="color: rgb(192, 79, 79)" @enderror >Selectionner une DREN</label>
+              <div wire:ignore>
+              <select class="form-select " id="select-beast" wire:model='CODE_DREN' autocomplete="off" >
                 <option >selectionner le code DREN</option>
                 @foreach ($codeDren as $item)
                  <option value="{{$item->code_dren}}">{{$item->code_dren}}-{{$item->nom_dren}}</option>
                 @endforeach
               </select>
+            </div>
               <div class="invalid-feedback">
                 @error('CODE_DREN')Selectionner une DREN @enderror"
               </div>
             </div>
-           
+            
  
             <div class="row mt-10">
                 <button class="btn btn-success col-12" >
@@ -91,6 +93,7 @@
       $('.closeformUpdateSchool').on('click', function(e){
       $('.modalSchool').modal('hide')  
       $('#modalSchoolInfos').modal('show') 
+      select.clear()
     })
     var select = new TomSelect("#select-beast",{
     create: true,
@@ -107,7 +110,16 @@
       'Effectué',
       'Enregistrement effectué avec succès',
       'success'
-      )     
+      ) 
+      select.clear()    
+    });
+    @this.on('save', (data) => {
+      Swal.fire(
+      'Effectué',
+      'Modification effectué avec succès',
+      'success'
+      ) 
+         
     });
   })
 </script>

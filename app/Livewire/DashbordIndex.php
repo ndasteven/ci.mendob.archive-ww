@@ -27,8 +27,8 @@ class DashbordIndex extends Component
 
     public function changeYear(){
         $this->yearsearch= $this->yearsearch;
-        $this->eleve6eme = eleve::where('annee', $this->yearsearch)->where('classe', '6eme')->count();   
-        $this->eleve2nde = eleve::where('annee', $this->yearsearch)->where('classe', '2nde')->count();  
+        $this->eleve6eme = eleve::where('annee', $this->yearsearch)->where('classe', '6eme')->whereNotNull('fiche_id')->count();   
+        $this->eleve2nde = eleve::where('annee', $this->yearsearch)->where('classe', '2nde')->whereNotNull('fiche_id')->count();  
         $this->ecole = ecole::count();
         $this->ficheRea = fiche::where('annee', $this->yearsearch)->where('type_fiche', 'reaffectation')->count();
         $this->ficheOmi = fiche::where('annee', $this->yearsearch)->where('type_fiche', 'omission')->count();

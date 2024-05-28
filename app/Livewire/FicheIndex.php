@@ -45,6 +45,9 @@ class FicheIndex extends Component
     public $elevefiche_eleveFichePivot;
     public $countMatricule = 0;
     public $resteMatricule;
+
+   
+
     private function resetInput(){
         $this->nom = $this->fiche_nom=$this->classe=$this->annee=$this->ecole_id=$this->dren_id =$this->type_fiche=$this->remarkFiche="";
     }
@@ -56,6 +59,9 @@ class FicheIndex extends Component
             $this->backgroundUpload = "green";
         }; 
         
+    }
+    public function openSecondModal(){
+        $this->dispatch('openSecondModal');
     }
     public string $orderField= 'nom';
     public string $orderDirection = 'ASC';
@@ -81,20 +87,22 @@ class FicheIndex extends Component
         'oderDirection'=> ['except'=>'ASC']
     ];
     public function research(){
-        $this->search = $this->search;
-        
-        
+        $this->search = $this->search;   
     }
     
-
+    public function deleteFiche(){
+        fiche::find($this->idefiche)->delete();
+        $this->idefiche="";
+        $this->ficheInfo="";
+        $this->dispatch('deleteok');
+        $this->dispatch('update')->to(FicheTable::class);
+    }
     public function ficheinfo(){
         
         $fiche = $this->ficheInfo=fiche::with('fiche_dren')->with('fiche_ecole')->with("fiche_eleve")->where('fiches.id',$this->idefiche)->get() ;
         $fiches= fiche::find($this->idefiche); 
         $this->elevefiche_eleveFichePivot=$fiches->eleveS->merge(eleve::where('fiche_id',$this->idefiche)->get()); //une fusion des eleves qui ont cette fiche comme primaire et les eleve ayant fiche annex
-        $this->countMatricule=$this->resteMatricule=0;
-
-        
+        $this->countMatricule=$this->resteMatricule=0;  
     }
     public function addStudentOnDecision(){ // function pour faire ressortir les matricules de la fiche
         $fiche = fiche::where('fiches.id',$this->idefiche)->get() ;
@@ -103,13 +111,13 @@ class FicheIndex extends Component
         $pdf = $parser->parseFile($pdfFilePath);
         $text = $pdf->getText();
         // Expression régulière pour rechercher les numéros de matricules
-        $pattern = '/\b\d{8}[A-Za-z]\b/'; // Supposons que les numéros de matricule ont 8 chiffres
+        $pattern = '/\b([A-Za-z]\d{8}|\d{8}[A-Za-z])\b/'; // regex matricules au format A12345678 ou 12345678A
 
         // Recherche des correspondances avec l'expression régulière
         preg_match_all($pattern, $text, $matches);
-
-        // Les numéros de matricules extraits
-        $this->matriculesExtraits = $matches[0];
+    
+        // Les numéros de matricules extraits au format 
+        $this->matriculesExtraits = array_values(array_unique(array_map('strtoupper', $matches[0]))); // les matricule trouver sont convertir en majuscule si il ya un doublon de matricule dans le tableau  il est supprimer automatiquement.
         $this->recupInfoMatricule();
         
        
@@ -177,8 +185,9 @@ class FicheIndex extends Component
             if($eleve->update(['fiche_id'=>$this->ficheInfo[0]->id,'ecole_A'=>$this->ficheInfo[0]->ecole_id, 'annee'=>$this->ficheInfo[0]->annee,'classe'=>$this->ficheInfo[0]->classe])){
                 session()->flash("success", "Décision a bien été attribué");
                 $this->dispatch('mise_a_jour');
-                $this->dispatch('update')->to(StudentTable::class);
+                $this->ficheinfo();
                 $this->dispatch('update')->to(FicheTable::class);
+                                
             }else{
                 session()->flash("error", "Erreur de mise à jour");
             }
@@ -231,10 +240,10 @@ class FicheIndex extends Component
         if($this->fiche_nom!==null ){
             $extensiValide = array("PDF","pdf");
             $fichiers = $this->fiche_nom->store('fiche_orientation', 'public');
-            $this->fiche_nom= basename($fichiers);
-            $validate['fiche_nom'] = $this->fiche_nom;
+            $fichiers= basename($fichiers);
+            $validate['fiche_nom'] = $fichiers;
             
-            if(in_array((pathinfo($this->fiche_nom, PATHINFO_EXTENSION)),$extensiValide)){
+            if(in_array((pathinfo($fichiers, PATHINFO_EXTENSION)),$extensiValide)){
 
                 if(!fiche::where('nom', $this->nom)->exists() ){
                    fiche::create($validate);
@@ -319,7 +328,7 @@ class FicheIndex extends Component
             if($ficheInfo->update($validate)){
                 session()->flash("success", "Mise à jour effectué avec succès");
                 $this->dispatch('update')->to(FicheTable::class);
-                $this->dispatch('save');
+                $this->dispatch('updatefICHE');
             }else{
                 session()->flash("error", "Erreur de mise à jour");
                 $this->dispatch('error');
@@ -328,7 +337,7 @@ class FicheIndex extends Component
             if($ficheInfo->update($validate)){
                 session()->flash("success", "Mise à jour effectué avec succès");
                 $this->dispatch('update')->to(FicheTable::class);
-                $this->dispatch('save');
+                $this->dispatch('updatefICHE');
             }else{
                 session()->flash("error", "Erreur de mise à jour");
                 $this->dispatch('error');
@@ -348,6 +357,11 @@ class FicheIndex extends Component
         ->get());
         return $result;
     }
+
+    //script pour bar de chargement progressbar
+    public $uploadProgress = 0;
+    //Fin script pour bar de chargement progressbar
+    
     public function render()
     {
         $elevesPagines=[]; //important
@@ -359,8 +373,9 @@ class FicheIndex extends Component
             
         }); 
         //ne pouvant pas utiliser paginate() directement sur la fusion $this->elevefiche_eleveFichePivot on utilise ce mode pagination
-        $page = Request::get('page'); // Récupérer le numéro de page à partir de la requête, par défaut 1
-        $perPage = 10; // Nombre d'éléments par page
+        $page = $this->getPage() ; // Récupérer le numéro de page à partir de la requête, par défaut 1
+
+        $perPage = 9; // Nombre d'éléments par page
         
         $sliced =  $elevesFiches->slice(($page - 1) * $perPage, $perPage); // Extraire les éléments pour la page en cours
         
@@ -372,6 +387,7 @@ class FicheIndex extends Component
         //fin
         
         return view('livewire.fiche-index',[ 
+            
             'liste_students_fiches'=>$elevesPagines,           
             'ecole'=>ecole::select('id','NOMCOMPLs')->get(),
             'codeDren'=>  dren::select('id','code_dren','nom_dren')

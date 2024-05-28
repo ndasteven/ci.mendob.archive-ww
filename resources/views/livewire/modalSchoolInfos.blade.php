@@ -69,10 +69,10 @@
                                                 <hr class="border border-black border-1 opacity-50">  
                                                 @endif
 
-                                                @if ($change_serie >0)
+                                                @if ($reorientatio_reaffectation >0)
                                                 <div class="row">
-                                                  <div class="col" style="text-align: left"><b>Nombre de fiches changements de series</b></div>
-                                                  <div class="col" style="text-align: right">{{$change_serie}}</div>
+                                                  <div class="col" style="text-align: left"><b>Nombre de fiches reorientation-reaffectation</b></div>
+                                                  <div class="col" style="text-align: right">{{$reorientatio_reaffectation}}</div>
                                                 </div>
                                                 <hr class="border border-black border-1 opacity-50">  
                                                 @endif

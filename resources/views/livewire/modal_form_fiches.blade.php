@@ -40,10 +40,18 @@
                     
                     <div class="col-md col-12">
                             <label >Selectionner la fiche de décision en PDF</label>
-                              <input style="display:none" class="form-control file-select @error('fiche_nom') is-invalid  @enderror" type="file" wire:model='fiche_nom' wire:change='getfilenames' id="fileInput" >
+                             <!--progress bar montrannt la progression du fichier selection dans le fichier temporaire de livewire ivewire_temp-->
+                              <div class="show_progressbar">
+                                <div class="progress" style="height: 2px; margin-bottom:-5px">
+                                  <div class="progress-bar" role="progressbar" style="width: {{$uploadProgress}}% ; font-size:5px"></div>
+                                </div>
+                              </div>  
+                            <!--Fin de progressbar-->
+                              <input style="display:none" class="form-control file-select @error('fiche_nom') is-invalid  @enderror file" type="file" wire:model='fiche_nom' wire:change='getfilenames' id="fileInput">
                               <a class="btn btn-primary @error('fiche_nom') btn-danger  @enderror bouton-select-file col-12 mt-2" style="background-color: {{$colorUpload}} " >
                                 <span wire:loading wire:target="fiche_nom" class="spinner-border spinner-border-sm spinner-border float-end mt-1" aria-hidden="true"></span>
-                                <i class="bi bi-file-earmark-pdf-fill"></i><span class="tele">Selectionner la décision en PDF</span> </a>
+                                <i class="bi bi-file-earmark-pdf-fill"></i><span class="tele">Selectionner la décision en PDF <span style="font-size: 11px"></span> @if($uploadProgress>0) <span class="badge rounded-pill text-bg-dark">{{$uploadProgress}}% @endif</span> </span>
+                              </a>
                               <div class="invalid-feedback">
                                   @error('fiche_nom') {{$message}} @enderror"
                              </div>
@@ -59,25 +67,27 @@
                                   </ul>
                                 </div>
                                 @endif
-                                   @if ($edit)
-                                      @if (strlen($fiche_nom)>10 && is_string($fiche_nom))
-                                      <a href="storage/fiche_orientation/{{$fiche_nom}}" target="_blank">
-                                        <small style="color: red">Voir Fiche <i class="bi bi-file-earmark-pdf-fill" style="color:red;"></i></small>
+                                  @if ($edit)
+                                    @if ($this->fiche_nom instanceof \Illuminate\Http\UploadedFile)
+                                    <div class="dropdown">
+                                      <a href="#" class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <small style="color: red"><i class="bi bi-file-earmark-pdf-fill" style="color:red;"> voir la fiche </i></small>
                                       </a>
-                                      @endif
-                                      @if (!is_string($fiche_nom) && strlen($fiche_nom) > 10)
-                                      <div class="dropdown">
-                                        <a href="#" class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                          <small style="color: red"><i class="bi bi-file-earmark-pdf-fill" style="color:red;"> voir la fiche </i></small>
-                                        </a>
-                                        <ul class="dropdown-menu">
-                                            <embed type="application/pdf" src="data:application/pdf;base64,{{ base64_encode(file_get_contents($fiche_nom->getRealPath()))}}" width="600px" height="400px">
-                                        </ul>
-                                      </div>
-                                      @endif
-                                      
-                                    
-                                    @endif
+                                      <ul class="dropdown-menu">
+                                          <embed type="application/pdf" src="data:application/pdf;base64,{{ base64_encode(file_get_contents($fiche_nom->getRealPath()))}}" width="600px" height="400px">
+                                      </ul>
+                                    </div>
+                                    @elseif ($this->fiche_nom)
+                                    <div class="dropdown">
+                                          <a href="#" class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <small style="color: red"><i class="bi bi-file-earmark-pdf-fill" style="color:red;"> voir la fiche </i></small>
+                                          </a>
+                                          <ul class="dropdown-menu">
+                                            <embed type="application/pdf" src="{{ asset('pdf/'. $this->fiche_nom) }}" width="600px" height="400px">
+                                          </ul>
+                                        </div> 
+                                    @endif                                   
+                                   @endif
                               </div>
                              @endif
                                   
@@ -92,13 +102,11 @@
                         <option selected value="">choisir le type de la fiche</option>
                         <option value="affectation">Affectation</option>
                         <option value="reaffectation">Réaffectation</option>
-                        <option value="orientation">Orientation</option>
                         <option value="reorientation">Reorientation</option>
                         <option value="changement_ordre">Changement d'ordre</option>
-                        <option value="changement_serie">Changement de serie</option>
                         <option value="permutation">Permutation</option>
                         <option value="omission">Omission</option>
-                        <option value="reorientatio-reaffectation">Reorientatio-Reaffectation</option>
+                        <option value="reorientatio-reaffectation">Reorientation-Reaffectation</option>
                     </select>
                     <div class="invalid-feedback">
                       @error('type_fiche')Selectionner le type de la fiche @enderror"
@@ -108,7 +116,7 @@
                 <div class="row mt-3 mb-3 d-flex justify-content-between">
                   <div class="col-md-5 col ">
                       <label for="validationServer01" class="form-label">Année de la fiche</label>
-                      <input type="tel" style="padding: 5px"  class="form-control mt-1 p-2 @error('annee') is-invalid @enderror " id="validationServer01" value="" wire:model='annee' oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');">
+                      <input type="tel" style="padding: 5px"  class="form-control mt-1 p-2 @error('annee') is-invalid @enderror " id="validationServer01" value="" wire:model='annee' oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" maxlength="4">
                       <div class="invalid-feedback">
                           @error('annee')Entrer une année valide @enderror"
                       </div>
@@ -134,7 +142,7 @@
                       }
                     </style>
                     <div class="col-md col-12" >
-                        <label for="formFile" class="form-label" >Selectionner la DREN de la fiche</label>
+                        <label for="formFile" class="form-label" @error('dren_id') style="color: rgb(192, 79, 79)" @enderror >Selectionner la DREN de la fiche</label>
                         <div wire:ignore>
                           <select class="form-select  @error('dren_id') is-invalid @enderror" id="select-dren" wire:model='dren_id' autocomplete="off" >
                               <option value="">selectionner le code DREN</option>
@@ -148,7 +156,7 @@
                         </div>
                     </div>
                     <div class="col-md col-12 mb-3" >
-                        <label for="formFile" class="form-label">Selectionner l'etablissement de la fiche</label>
+                        <label for="formFile" class="form-label" @error('ecole_id') style="color: rgb(192, 79, 79)" @endif>Selectionner l'etablissement de la fiche</label>
                         <div wire:ignore>
                           <select class=" form-select @error('ecole_id') is-invalid @enderror" id="select-beast" wire:model='ecole_id' autocomplete="off" style="z-index: 2;" >
                           </select>
@@ -174,7 +182,7 @@
                       <div class="spinner-border" role="status" style="width: 15px; height: 15px">
                       </div>
                     </span>
-                </button>  
+                 </button>  
                 </div>
                 
             </div>
@@ -197,6 +205,19 @@
   </div>
   @script
   <script>
+    
+    //script qui ecoute la progression de chargement en pourcentage de la fiche
+    document.addEventListener('livewire-upload-progress', (event) => {
+      // Utiliser Livewire pour mettre à jour la variable de progression    
+      @this.set('uploadProgress', event.detail.progress);
+      if(event.detail.progress ==100){
+        setTimeout(() => {
+          @this.set('uploadProgress', 0); 
+        }, 2000);
+        
+      }      
+    });
+  //fin script
   document.addEventListener('livewire:initialized', () => {
    
     //fonction qui permet le select de tom select en ecoutant getEcole() dans studentIndex.php lors de la saisie
@@ -260,6 +281,15 @@
       select1.clear()
      
     });
+    @this.on('updatefICHE', (data) => {
+      Swal.fire(
+      'Effectué',
+      'Modification effectué avec succès',
+      'success'
+      )
+     
+     
+    });
     @this.on('error', (data) => {
       Swal.fire(
       'Existe déjà',
@@ -286,6 +316,8 @@
     $('.closeformUpdateFiche').on('click', function(e){
       $('#modal_form_fiche').modal('hide')  
       $('#modalFicheInfos').modal('show') 
+      select.clear()
+      select1.clear()
     })
 })
   

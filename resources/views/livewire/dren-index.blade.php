@@ -17,12 +17,13 @@ table{
         </h2>
     </x-slot>
     <div class="container">
+        
         @if (Auth::check() && Auth::user()->role === 'superAdmin' || Auth::user()->role === 'admin')
         <div class="row d-flex justify-content-end mt-4">
-            <button class="btn btn-primary activeAddDren btn-sm col-5 col-md-2" data-bs-toggle="modal" data-bs-target="#exampleModal" style="display: none">Créer une DREN</button>
+            <button wire:click="create()" class="btn btn-primary activeAddDren btn-sm col-5 col-md-2" data-bs-toggle="modal" data-bs-target="#exampleModal" style="display: none">Créer une DREN</button>
         </div>
         @endif
-
+        <button class="Drenclick" wire:model='ide'   data-bs-toggle="modal" data-bs-target="#modalDrenInfos" wire:click="drenInfo"   style="display:none" ></button>
         <!--liste des élèves -->
         <div class="row">
             <div class="col-12 mt-4">
@@ -33,16 +34,20 @@ table{
         <!-- modal -->
         @include('livewire.modal_form_drens')
         <!--fin modal -->
+        @include('livewire.modalDrenInfos')
     </div>
     
 </div>
 <script>
-    document.addEventListener('livewire:initialized', () => {
-     
-
-       @this.on('addDren', function(){
+    document.addEventListener('livewire:initialized', () => {     
+        
+       @this.on('addDren', function(){ // active le boutton de ajouter dren
         $('.activeAddDren').click()
        })
-      
+
+       @this.on('edit', (data) => {
+        @this.set('drenId', data.rowId) //ce id ce trouve dans le bouton sectionner dans le controlleur de mon powergrid "drenTable"
+        $('.Drenclick').click()
+       });
     });
 </script>

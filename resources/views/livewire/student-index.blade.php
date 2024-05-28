@@ -14,6 +14,7 @@
 }
 .checkinfo{
     background-color: #39b315;color:#fff;
+    margin-top: 10px;
 }
 table{
     font-size: 13px;
@@ -33,17 +34,50 @@ table{
             <div class="container">
                
                 <div class="row">
-                    
+                    <div style="position: absolute">
                     @if (!empty($shareAnnee) || !empty($shareNiveau))
                      @if (!empty($shareNiveau))
-                         <small style="color: blue"> Filter par niveau : <b style="color: red">{{$shareNiveau}}</b></small>
+                         <small> <span style="color: blue">Filter par niveau</span>: 
+                             <select wire:change="changeSelect" wire:model="shareNiveau" class="border-0" style="background-color:#f3f4f6; color:red; font-weight:bold" name="" id="">
+                                <option selected value="">{{ $shareNiveau }}</option>
+                                @if ($shareNiveau=="6eme")
+                                 <option value="2nde">2nde</option>
+                                 <option value="">full</option>
+                                 @else                                  
+                                 <option value="6eme">6eme</option>
+                                 <option value="">full</option>  
+                                @endif 
+                             </select>
+                         </small>
                      @endif 
                      @if (!empty($shareAnnee))
-                         <small style="color: blue"> Filter par année : <b style="color: red">{{$shareAnnee}}</b> </small>
+                     <small> <span style="color: blue">Filter par année</span>: 
+                        <select wire:change="changeSelect" wire:model="shareAnnee" class="border-0" style="background-color:#f3f4f6; color:red; font-weight:bold" name="" id="">
+                           <option selected value="">{{ $shareAnnee }}</option>
+                           <option value="2019">2019</option>
+                           <option value="2020">2020</option>
+                           <option value="2021">2021</option>
+                           <option value="2022">2022</option>
+                           <option value="">fulll</option>
+                        </select>
+                    </small>
                      @endif 
                     @endif
+                    {{-- bouton radio pour afficher eleve avec fiche ou sans fiche --}}
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" wire:click='methodechecked' wire:model="checkedFiche" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                        <label class="form-check-label" for="flexSwitchCheckDefault"><small style="margin-bottom: px">avec décision</small></label>
+                      </div>
+                    {{--fin bouton radio pour afficher eleve avec fiche ou sans fiche --}}
+                      <div class="col-1" style="position: absolute;top:18%; left:-4px">
+                        <span class="col-1" wire:loading style="margin: 0;">
+                          <div class="spinner-border" role="status" style="width: 15px; height: 15px; color:#ee8712">
+                          </div>
+                        </span>  
+                      </div>
+                    </div>
                     <div class="col-md-12 col-12 mt-5">
-                        <livewire:student-table :shareAnnee="$shareAnnee" :shareNiveau="$shareNiveau" /><button class="studentclick" wire:model='ide'   data-bs-toggle="modal" data-bs-target="#modalStudentInfos" wire:click="studentInfo()"   style="display:none" ></button>
+                        <livewire:student-table :shareAnnee="$shareAnnee" :shareNiveau="$shareNiveau" :checkedFiche="$checkedFiche" /><button class="studentclick" wire:model='ide'   data-bs-toggle="modal" data-bs-target="#modalStudentInfos" wire:click="studentInfo()"   style="display:none" ></button>
                                                 <button class="multipleCheck" wire:model='idsSelects' wire:click="getIdArray" data-bs-toggle="modal" data-bs-target="#multipleEdit"></button>
                     </div>
                 </div>

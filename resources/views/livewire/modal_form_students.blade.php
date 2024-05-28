@@ -81,6 +81,7 @@
                     <select class="form-select @error('serie') is-invalid @enderror " id="validationCustom04"  wire:model='serie'  >
                       <option selected value="">choisir la série</option>
                       <option value="A">A</option>
+                      <option value="B">B</option>
                       <option value="C">C</option>
                       <option value="G1">G1</option>
                       <option value="G2">G2</option>
@@ -89,6 +90,7 @@
                       <option value="AB">AB</option>
                       <option value="T1">T1</option>
                       <option value="T2">T2</option>
+                      <option value="T3">T3</option>
                     </select>
                     <div class="invalid-feedback">
                       veillez selectionner une série.
@@ -98,7 +100,7 @@
 
                 <div class="col-6 col-md">
                   <label for="validationServer01" class="form-label">Année d'orientation</label>
-                  <input  class="form-control @error('annee') is-invalid @enderror  " id="validationServer01" value="" wire:model='annee'  >
+                  <input  class="form-control @error('annee') is-invalid @enderror  " id="validationServer01" value="" wire:model='annee' oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*?)\..*/g, '$1');" maxlength="4"  >
                   <div class="invalid-feedback">
                     Entrer l'année d'orientation de l'élève
                   </div>

@@ -435,7 +435,7 @@
                 @else
                 <span style="color: red"><small>pas de fichier chargé</small> </span><br>
                 @endif
-            <!--Fin de progressbar-->
+               <!--Fin de progressbar-->
                 <img class="shadow-lg" src="asset/img/excel-logo.png" style="max-width: 100%" alt=""> 
                 <div style="text-align: center">{{$checkFile}}</div>
               </button>

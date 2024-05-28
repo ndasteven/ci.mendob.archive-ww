@@ -1,5 +1,5 @@
      {{--Script de chargement des donnees venant du controller livewire studentIndex.php--}}
-     <div wire:loading style="z-index: 10;">
+     <div wire:loading style="z-index: 10; display:none">
         <div class="d-flex justify-content-between" style="background-color: rgba(0, 0, 0, 0.4);width:100%; height:100%; left:0; top:0;position:fixed;">
           <div class="col-8 col-md-2 mx-auto" style="display: block; z-index: 2; margin-top:15% ">
             <!--card pour alert-->

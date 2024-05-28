@@ -5,6 +5,7 @@
 /public/storage
 /storage/*.key
 /vendor
+!/vendor/power-components/livewire-powergrid/resources/views/components/frameworks/bootstrap5/filters/FilterInputText.php
 .env
 .env.backup
 .env.production

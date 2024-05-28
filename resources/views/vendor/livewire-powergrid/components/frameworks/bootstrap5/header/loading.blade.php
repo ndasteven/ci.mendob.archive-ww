@@ -3,9 +3,9 @@
     style="padding-left: 10px;"
 >
     <div
-        wire:loading.class="spinner-border d-none d-sm-block"
+        wire:loading.class="spinner-border d-block"
         role="status"
-        style="color: #656363;"
+        style="color: #bd6f09;"
     >
         <span class="visually-hidden">Loading...</span>
     </div>

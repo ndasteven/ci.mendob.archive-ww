@@ -45,6 +45,9 @@ class StudentIndex extends Component
     public $hasRole="user";
     public $shareAnnee;
     public $shareNiveau;
+    public $checkedFiche ;
+
+    #[\Livewire\Attributes\On('update')]
 
     public function getfilenames(){
     $this->fileName ='file name : ' ;
@@ -121,10 +124,18 @@ class StudentIndex extends Component
         
         $requete=eleve::where('eleves.id',$this->idsSelects[$this->countTableIndex] );
         $this->elevemultipleUpdate=$requete->get();
-
-         //lors de la modification nous devons preremplir les tomselect de notre form avec les valeur de eleve 
+        
+         //lors de la modification nous devons preremplir les tomselect de notre form avec les valeur de eleve dans la view multipleEdit_form 
          $getEcoleOrigin = collect(ecole::select('id','NOMCOMPLs')->where('id',$this->elevemultipleUpdate[0]->ecole_id)->first());
+         $getEcoleAccueil = collect(ecole::select('id','NOMCOMPLs')->where('id',$this->elevemultipleUpdate[0]->ecole_A)->first());
+         $getFiche = collect(fiche::select('id','nom')->where('id',$this->elevemultipleUpdate[0]->fiche_id)->first());
          $this->dispatch('getEcoleOrigin', id:$this->elevemultipleUpdate[0]->ecole_id, data:$getEcoleOrigin);
+         $this->dispatch('getEcoleAccueil', id:$this->elevemultipleUpdate[0]->ecole_A, data:$getEcoleAccueil);
+         $this->dispatch('getFiche', id:$this->elevemultipleUpdate[0]->fiche_id, data:$getFiche);
+         
+         $this->annee=$this->elevemultipleUpdate[0]->annee;
+         $this->classe=$this->elevemultipleUpdate[0]->classe; 
+         $this->serie=$this->elevemultipleUpdate[0]->serie;
 
         if(strlen($this->elevemultipleUpdate[0]->ecole_id)==null){
 
@@ -197,6 +208,20 @@ class StudentIndex extends Component
     }
     public function checkSerieMultiple(){
         $this->serieMultiple = $this->serieMultiple; // il regarde si la serie est identique pour tous les élèves selectionnés 
+    }
+    public function changeSelect(){
+        session(['shareYear' => $this->shareAnnee]);
+        session(['shareNiveau' => $this->shareNiveau]);
+        return redirect()->route('student');
+    }
+    public function methodechecked(){ // la function ecoute le boutton de afficher avec fiche ou non
+        if($this->checkedFiche=='true'){
+            session(['shareCheckFiche' => $this->checkedFiche]) ;
+            return redirect()->route('student');
+        }else{
+            session(['shareCheckFiche' => 'false']); 
+            return redirect()->route('student');
+        }
     }
     public function storeStudent(){
         
@@ -308,6 +333,7 @@ class StudentIndex extends Component
             }
             
             $eleveupdate = eleve::find($this->idsSelects[$this->countTableIndex]);
+            
             if($eleveupdate->fiche_id== null){
                 $validate['fiche_id']=$this->fiche_id;
                 if($eleveupdate->update($validate)){
@@ -361,6 +387,7 @@ class StudentIndex extends Component
         eleve::find($a)->delete();
         $this->ide="";
         $this->eleveInfo='';
+        $this->dispatch('update')->to(StudentTable::class);
     }
     public function detachFichePrimaire($id){ // detacher la fiche primaire de l'eleve 
         $eleve = Eleve::find($id);
@@ -376,9 +403,10 @@ class StudentIndex extends Component
             $eleve->update(['ecole_A' => null]); 
         }
         $this->dispatch('detachPrimary'); //il rafraichir les fiche supprimé  
-        $this->dispatch('update')->to(StudentTable::class);  
+        $this->dispatch('update')->to(StudentTable::class); 
+        $this->dispatch('update')->to(StudentIndex::class); 
     }
-    public function detachFicheAnnexe($idEleve, $idFiche){
+    public function detachFicheAnnexe($idEleve, $idFiche){ // detache fiche annexe de eleve si existe
         $eleve = Eleve::find($idEleve);
         $eleve->ficheS()->detach($idFiche);
         $derniereFiche = $eleve->fiches()->latest()->first(); // on check l'ecole de la derniere fiche associe a l'eleve
@@ -391,7 +419,8 @@ class StudentIndex extends Component
             $eleve->update(['ecole_A' => null]); // alors on lui enleve l'ecole d'accueil
         }
         $this->dispatch('update')->to(StudentTable::class);
-        $this->dispatch('detachPrimary'); //il rafraichir les fiche supprimé   
+        $this->dispatch('detachPrimary'); //il rafraichir les fiche supprimé 
+        $this->dispatch('update')->to(StudentIndex::class);// rafraichir  
     }
     public function mise_a_jour(){ //permet juste de rafraichir la modification des fichier detacher 
         //on a fait expres de le laisser vide
@@ -450,11 +479,9 @@ class StudentIndex extends Component
     }
     public function render()
     {
-        
-        
         $this->shareAnnee = session('shareYear');
         $this->shareNiveau = session('shareNiveau');
-        
+        $this->checkedFiche=session('shareCheckFiche');
      
         return view('livewire.student-index', [
             
